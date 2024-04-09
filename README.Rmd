@@ -1,0 +1,63 @@
+---
+output: html_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# CVComplete
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of CVComplete is to package all the functions Lizzie has had to build on her own when working with cross validation. It harnesses functions from a myriad of other packages, and tailors their powers to perform CV and output the metrics Lizzie often needs for her work.
+
+## Installation
+
+You can install the development version of CVComplete like so:
+
+``` {r}
+#for others:
+#run devtools::install_github("easoneli176/CVComplete") to install package
+
+#on my personal machine
+library(devtools)
+library(CVComplete)
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(CVComplete)
+
+mock_data <- data.frame(preds = rep(1:4,10),target=rep(1:5,8),strat=rep(1:2,20))
+#new data set:
+newdat<-fold_field(mock_data,3,"strat")
+#check that stratification worked:
+table(newdat$fold,newdat$strat)
+
+#Notes on package creation for Lizzie that probably belong in a template:
+#when creating a package, use roxygen2::roxygenise() to create documentation after writing the source code .R file
+#ctrl+shift+B rebuilds package after editing
+#to connect existing package to github, make sure project has version control, commit changes, then run in the terminal:
+#git remote add origin git@github.com:easoneli176/reponame.git (can copy this link from repo)
+#git branch -M main
+#git push -u origin main
+
+#if packages need uploading:
+#manually find the package in windows, they're stored here: C:\Users\eason\AppData\Local\R\win-library\4.2
+#move the package out of that folder and keep it somewhere in case stuff breaks
+#then install the newest version. If issues, can go to cran website and get zip file to move into folder
+#The code `devtools::build_readme()` is handy for keeping README.md up to date. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
+#This seems to fail without changing the output type to html, so trying that
+```

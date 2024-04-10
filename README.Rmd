@@ -50,6 +50,42 @@ newdat<-fold_field(mock_data,3,"strat")
 #check that stratification worked:
 table(newdat$fold,newdat$strat)
 
+#other 3 functions:
+#create mock dataframe
+mock_data <- data.frame(preds1 = rep(1:4,10),preds2 = rep(1:10,4),target=rep(1:5,8),strat=rep(1:2,20),weights = rep(c(2,1),20))
+#model function:
+model_function<-function(target,data,weights){
+ targnum<-which(colnames(data) == target)
+ weightnum<-which(colnames(data) == weights)
+ moddat<-data[,-c(targnum,weightnum)]
+ targ<-data[,targnum]
+ weights<-data[,weightnum]
+ set.seed(123)
+ mod<-lm(targ~.,data=moddat,weights=weights)
+ mod
+ }
+#test function:
+summary(model_function("target",mock_data,"weights"))
+#compare to:
+mock_data2 <- mock_data[,-which(colnames(mock_data) == "weights")]
+summary(lm(target~.,data=mock_data2,weights=mock_data$weights))
+#' finally, if those match, test functions:
+mymods<-buildcvmods(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
+
+datwpreds<-oofpreds(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
+
+datwpreds %>%
+  kable(format = "html", col.names = colnames(datwpreds)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width="100%",height = "200px")
+
+coeffdat<-coeffcomp(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
+
+coeffdat %>%
+  kable(format = "html", col.names = colnames(coeffdat)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width="100%",height = "200px")
+
 #Notes on package creation for Lizzie that probably belong in a template:
 #when creating a package, use roxygen2::roxygenise() to create documentation after writing the source code .R file
 #ctrl+shift+B rebuilds package after editing

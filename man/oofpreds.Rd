@@ -4,7 +4,7 @@
 \alias{oofpreds}
 \title{Adds a field of out of fold predictions to the data}
 \usage{
-oofpreds(data, target, stratify, preds, modelfunc, numfolds)
+oofpreds(data, target, stratify, preds, modelfunc, weights, numfolds)
 }
 \arguments{
 \item{data}{the dataset}
@@ -17,6 +17,8 @@ oofpreds(data, target, stratify, preds, modelfunc, numfolds)
 
 \item{modelfunc}{a function that takes the target and dataset with only predictors and creates a model in the desired format. The user is responsible for writing this function and ensuring it outputs the model in the desired format.}
 
+\item{weights}{the weights to be used in model building if desired. This must be a field in the dataframe and a column of 1s can be added if no weights are desired.}
+
 \item{numfolds}{the number of desired folds for cross validation}
 }
 \value{
@@ -26,24 +28,27 @@ a dataset
 Adds a field of out of fold predictions to the data
 }
 \examples{
-mock_data <- data.frame(preds1 = rep(1:4,10),preds2 = rep(1:10,4),target=rep(1:5,8),strat=rep(1:2,20))
+mock_data <- data.frame(preds1 = rep(1:4,10),preds2 = rep(1:10,4),target=rep(1:5,8),strat=rep(1:2,20),weights = rep(c(2,1),20))
 model function:
-model_function<-function(target,data){
+model_function<-function(target,data,weights){
 targnum<-which(colnames(data) == target)
-moddat<-data[,-targnum]
+weightnum<-which(colnames(data) == weights)
+moddat<-data[,-c(targnum,weightnum)]
 targ<-data[,targnum]
+weights<-data[,weightnum]
 set.seed(123)
-mod<-lm(targ~.,data=moddat)
+mod<-lm(targ~.,data=moddat,weights=weights)
 mod
 }
 test function:
-model_function("target",mock_data)
+model_function("target",mock_data,"weights")
 compare to:
-lm(target~.,data=mock_data)
+mock_data2 <- mock_data[,-which(colnames(mock_data) == "weights")]
+lm(target~.,data=mock_data2,weights=mock_data$weights)
 finally, test function:
 data2<-oofpreds(mock_data,"target","strat",c("preds1","preds2"),model_function,3)
 check that right model predicted right row:
-mymods<-buildcvmods(mock_data,"target","strat",c("preds1","preds2"),model_function,3)
+mymods<-buildcvmods(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
 predict(mymods[[data2$fold[2]]],data2[2,],type="response")
 should match oofpred field in 2nd row of data
 }

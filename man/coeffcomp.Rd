@@ -4,7 +4,7 @@
 \alias{coeffcomp}
 \title{Outputs a dataset comparing coefficients of models created during cv}
 \usage{
-coeffcomp(data, target, stratify, preds, modelfunc, numfolds)
+coeffcomp(data, target, stratify, preds, modelfunc, weights, numfolds)
 }
 \arguments{
 \item{data}{the dataset}
@@ -17,6 +17,8 @@ coeffcomp(data, target, stratify, preds, modelfunc, numfolds)
 
 \item{modelfunc}{a function that takes the target and dataset with only predictors and creates a model in the desired format. The user is responsible for writing this function and ensuring it outputs the model in the desired format.}
 
+\item{weights}{the weights to be used in model building if desired. This must be a field in the dataframe and a column of 1s can be added if no weights are desired.}
+
 \item{numfolds}{the number of desired folds for cross validation}
 }
 \value{
@@ -26,20 +28,23 @@ a dataframe with coefficients across models, the mean and std dev of those coeff
 Outputs a dataset comparing coefficients of models created during cv
 }
 \examples{
-mock_data <- data.frame(preds1 = rep(1:4,10),preds2 = rep(1:10,4),target=rep(1:5,8),strat=rep(1:2,20))
+mock_data <- data.frame(preds1 = rep(1:4,10),preds2 = rep(1:10,4),target=rep(1:5,8),strat=rep(1:2,20),weights = rep(c(2,1),20))
 model function:
-model_function<-function(target,data){
+model_function<-function(target,data,weights){
 targnum<-which(colnames(data) == target)
-moddat<-data[,-targnum]
+weightnum<-which(colnames(data) == weights)
+moddat<-data[,-c(targnum,weightnum)]
 targ<-data[,targnum]
+weights<-data[,weightnum]
 set.seed(123)
-mod<-lm(targ~.,data=moddat)
+mod<-lm(targ~.,data=moddat,weights=weights)
 mod
 }
 test function:
-model_function("target",mock_data)
+model_function("target",mock_data,"weights")
 compare to:
-lm(target~.,data=mock_data)
+mock_data2 <- mock_data[,-which(colnames(mock_data) == "weights")]
+lm(target~.,data=mock_data2,weights=mock_data$weights)
 finally, test function:
-coeffcomp(mock_data,"target","strat",c("preds1","preds2"),model_function,3)
+coeffcomp(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
 }

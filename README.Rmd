@@ -20,6 +20,10 @@ knitr::opts_chunk$set(
 
 The goal of CVComplete is to package all the functions Lizzie has had to build on her own when working with cross validation. It harnesses functions from a myriad of other packages, and tailors their powers to perform CV and output the metrics Lizzie often needs for her work.
 
+Cross validation is used to determine the effectiveness of a particular modeling method. In k-fold cross validation, rather than a single simple train-test split, we harness the power of the entire dataset to determine how the method performs on unseen data by iteratively applying the method to different subsets of the data and testing it on the unseen subset. The metrics calculated from k-fold cross validation are averaged across the k-folds and assumed to apply to the modeling method itself. Thus, once the predictive power of the method has been established through k-fold cross validation, typically we re-fit the final model using the method on the full dataset. There is some controversy over this refitting step as sometimes the size of a dataset can change predictive power, but this is the general practice.
+
+Typically, data scientists are interested in calculating performance metrics on the out of fold predictions from cross validation and using them to determine model predictive power. However, Lizzie has found there is often more to consider than metrics such as the AIC, BIC, RMSE, R^2, etc. Particularly in the case of linear models, we can evaluate the stability of linear coefficients across models created from different segments of data. Further, we can consider how often models overfit the data across folds, or how often a certain coefficient was statistically significant. That's where this package comes into play. This package automates coefficient comparison across folds, and gives the user easy-to-work-with fields for folds and out of fold predictions, which allow the user to calculate their own creative metrics if they so desire.
+
 ## Installation
 
 You can install the development version of CVComplete like so:

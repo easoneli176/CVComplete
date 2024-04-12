@@ -1,5 +1,5 @@
 ---
-output: html_document
+output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -24,17 +24,14 @@ Cross validation is used to determine the effectiveness of a particular modeling
 
 Typically, data scientists are interested in calculating performance metrics on the out of fold predictions from cross validation and using them to determine model predictive power. However, Lizzie has found there is often more to consider than metrics such as the AIC, BIC, RMSE, R^2, etc. Particularly in the case of linear models, we can evaluate the stability of linear coefficients across models created from different segments of data. Further, we can consider how often models overfit the data across folds, or how often a certain coefficient was statistically significant. That's where this package comes into play. This package automates coefficient comparison across folds, and gives the user easy-to-work-with fields for folds and out of fold predictions, which allow the user to calculate their own creative metrics if they so desire.
 
+
 ## Installation
 
-You can install the development version of CVComplete like so:
+You can install the development version of CVComplete from [GitHub](https://github.com/) with:
 
-``` {r}
-#for others:
-#run devtools::install_github("easoneli176/CVComplete") to install package
-
-#on my personal machine
-library(devtools)
-library(CVComplete)
+``` r
+# install.packages("devtools")
+devtools::install_github("easoneli176/CVComplete")
 ```
 
 ## Example
@@ -45,8 +42,10 @@ This is a basic example which shows you how to solve a common problem:
 library(CVComplete)
 
 mock_data <- data.frame(preds = rep(1:4,10),target=rep(1:5,8),strat=rep(1:2,20))
+
 #new data set:
 newdat<-fold_field(mock_data,3,"strat")
+
 #check that stratification worked:
 table(newdat$fold,newdat$strat)
 
@@ -69,35 +68,15 @@ summary(model_function("target",mock_data,"weights"))
 #compare to:
 mock_data2 <- mock_data[,-which(colnames(mock_data) == "weights")]
 summary(lm(target~.,data=mock_data2,weights=mock_data$weights))
-#' finally, if those match, test functions:
+
+#finally, if those match, test functions:
 mymods<-buildcvmods(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
 
 datwpreds<-oofpreds(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
 
-datwpreds %>%
-  kable(format = "html", col.names = colnames(datwpreds)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width="100%",height = "200px")
+datwpreds
 
 coeffdat<-coeffcomp(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
 
-coeffdat %>%
-  kable(format = "html", col.names = colnames(coeffdat)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width="100%",height = "200px")
-
-#Notes on package creation for Lizzie that probably belong in a template:
-#when creating a package, use roxygen2::roxygenise() to create documentation after writing the source code .R file
-#ctrl+shift+B rebuilds package after editing
-#to connect existing package to github, make sure project has version control, commit changes, then run in the terminal:
-#git remote add origin git@github.com:easoneli176/reponame.git (can copy this link from repo)
-#git branch -M main
-#git push -u origin main
-
-#if packages need uploading:
-#manually find the package in windows, they're stored here: C:\Users\eason\AppData\Local\R\win-library\4.2
-#move the package out of that folder and keep it somewhere in case stuff breaks
-#then install the newest version. If issues, can go to cran website and get zip file to move into folder
-#The code `devtools::build_readme()` is handy for keeping README.md up to date. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
-#This seems to fail without changing the output type to html, so trying that
+coeffdat
 ```

@@ -43,13 +43,13 @@ coeffcomp<-function(data,target,stratify,preds,modelfunc,weights,numfolds){
   cc2$meanCoeff<-rowMeans(cc)
   cc2$stdevCoeff<-1
 
-  for (i in 1:dim(cc)[2]){
+  for (i in 1:dim(cc)[1]){
     cc2$stdevCoeff[i]<-sd(cc[i,])
   }
 
   cc2$CoeffSwitch<-"N"
 
-  for (i in 1:dim(cc)[2]){
+  for (i in 1:dim(cc)[1]){
     posind<-c()
     for (j in 1:numfolds){
       posind[j]<-cc[i,j] > 0

@@ -11,7 +11,7 @@ fold_field(data, numfolds, stratify)
 
 \item{numfolds}{the number of desired folds for cross validation}
 
-\item{stratify}{the name of the field in the dataset which we wish to use to stratify the cv folds}
+\item{stratify}{optional: the name of the field in the dataset which we wish to use to stratify the cv folds}
 }
 \value{
 a dataset
@@ -25,4 +25,6 @@ new data set:
 newdat<-fold_field(mock_data,3,"strat")
 check that stratification worked:
 table(newdat$fold,newdat$strat)
+check that folds work without stratification:
+newdat<-fold_field(mock_data,3)
 }

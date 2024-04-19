@@ -2,22 +2,22 @@
 % Please edit documentation in R/foldfield.R
 \name{fold_field}
 \alias{fold_field}
-\title{Adds a field to a dataframe which encodes stratified folds}
+\title{Adds a field to a dataframe which encodes potentially stratified folds}
 \usage{
 fold_field(data, numfolds, stratify)
 }
 \arguments{
 \item{data}{the dataset}
 
-\item{numfolds}{the number of desired folds for cross validation}
+\item{numfolds}{the number of desired folds}
 
-\item{stratify}{optional: the name of the field in the dataset which we wish to use to stratify the cv folds}
+\item{stratify}{optional: the name of the field in the dataset which we wish to use to stratify the folds}
 }
 \value{
-a dataset
+a dataset with a field called "fold"
 }
 \description{
-Adds a field to a dataframe which encodes stratified folds
+Adds a field to a dataframe which encodes potentially stratified folds
 }
 \examples{
 mock_data <- data.frame(preds = rep(1:4,10),target=rep(1:5,8),strat=rep(1:2,20))
@@ -27,4 +27,5 @@ check that stratification worked:
 table(newdat$fold,newdat$strat)
 check that folds work without stratification:
 newdat<-fold_field(mock_data,3)
+table(newdat$fold,newdat$strat)
 }

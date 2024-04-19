@@ -1,9 +1,9 @@
-#' Adds a field to a dataframe which encodes stratified folds
+#' Adds a field to a dataframe which encodes potentially stratified folds
 #'
 #' @param data the dataset
-#' @param numfolds the number of desired folds for cross validation
-#' @param stratify optional: the name of the field in the dataset which we wish to use to stratify the cv folds
-#' @return a dataset
+#' @param numfolds the number of desired folds
+#' @param stratify optional: the name of the field in the dataset which we wish to use to stratify the folds
+#' @return a dataset with a field called "fold"
 #' @examples
 #' mock_data <- data.frame(preds = rep(1:4,10),target=rep(1:5,8),strat=rep(1:2,20))
 #' new data set:
@@ -12,6 +12,7 @@
 #' table(newdat$fold,newdat$strat)
 #' check that folds work without stratification:
 #' newdat<-fold_field(mock_data,3)
+#' table(newdat$fold,newdat$strat)
 
 fold_field<-function(data,numfolds,stratify){
 

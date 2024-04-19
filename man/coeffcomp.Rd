@@ -2,37 +2,31 @@
 % Please edit documentation in R/coeffcomp.R
 \name{coeffcomp}
 \alias{coeffcomp}
-\title{Outputs a dataset comparing coefficients of models created during cv}
+\title{Outputs a dataset comparing coefficients of models created during cv. If the dataset already has a column named "fold" then that field will be used for CV, otherwise folds will be created by the function.}
 \usage{
-coeffcomp(data, target, stratify, preds, modelfunc, weights, numfolds)
+coeffcomp(data, numfolds, stratify, modelfunc)
 }
 \arguments{
 \item{data}{the dataset}
 
-\item{target}{the target variable for the model}
+\item{numfolds}{optional: the number of desired folds for cross validation if folds are not provided}
 
-\item{stratify}{the name of the field in the dataset which we wish to use to stratify the cv folds}
+\item{stratify}{optional: the name of the field in the dataset which we wish to use to stratify the folds if folds are not provided and stratification is desired}
 
-\item{preds}{the predictors for the model}
-
-\item{modelfunc}{a function that takes the target and dataset with only predictors and creates a model in the desired format. The user is responsible for writing this function and ensuring it outputs the model in the desired format.}
-
-\item{weights}{the weights to be used in model building if desired. This must be a field in the dataframe and a column of 1s can be added if no weights are desired.}
-
-\item{numfolds}{the number of desired folds for cross validation}
+\item{modelfunc}{a function that takes the dataset as input and creates a model in the desired format. The user is responsible for writing this function and ensuring it outputs the model in the desired format.}
 }
 \value{
 a dataframe with coefficients across models, the mean and std dev of those coeffs, and an indicator as to whether the coefficient switched directions between models, p values of each coefficient, and an indicator of whether all p-values are statistically significant across models
 }
 \description{
-Outputs a dataset comparing coefficients of models created during cv
+Outputs a dataset comparing coefficients of models created during cv. If the dataset already has a column named "fold" then that field will be used for CV, otherwise folds will be created by the function.
 }
 \examples{
 mock_data <- data.frame(preds1 = rep(1:4,10),preds2 = rep(1:10,4),target=rep(1:5,8),strat=rep(1:2,20),weights = rep(c(2,1),20))
 model function:
-model_function<-function(target,data,weights){
-targnum<-which(colnames(data) == target)
-weightnum<-which(colnames(data) == weights)
+model_function<-function(data){
+targnum<-which(colnames(data) == "target")
+weightnum<-which(colnames(data) == "weights")
 moddat<-data[,-c(targnum,weightnum)]
 targ<-data[,targnum]
 weights<-data[,weightnum]
@@ -41,10 +35,13 @@ mod<-lm(targ~.,data=moddat,weights=weights)
 mod
 }
 test function:
-model_function("target",mock_data,"weights")
+model_function(mock_data)
 compare to:
 mock_data2 <- mock_data[,-which(colnames(mock_data) == "weights")]
 lm(target~.,data=mock_data2,weights=mock_data$weights)
 finally, test function:
-coeffcomp(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
+coeffcomp(mock_data,3,"strat",model_function)
+test with predefined folds (results should match)
+mock_data3<-fold_field(mock_data,3,"strat")
+coeffcomp(mock_data3,modelfunc=model_function)
 }

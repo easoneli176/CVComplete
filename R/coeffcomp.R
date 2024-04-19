@@ -1,19 +1,16 @@
-#' Outputs a dataset comparing coefficients of models created during cv
+#' Outputs a dataset comparing coefficients of models created during cv. If the dataset already has a column named "fold" then that field will be used for CV, otherwise folds will be created by the function.
 #'
 #' @param data the dataset
-#' @param target the target variable for the model
-#' @param stratify the name of the field in the dataset which we wish to use to stratify the cv folds
-#' @param preds the predictors for the model
-#' @param modelfunc a function that takes the target and dataset with only predictors and creates a model in the desired format. The user is responsible for writing this function and ensuring it outputs the model in the desired format.
-#' @param weights the weights to be used in model building if desired. This must be a field in the dataframe and a column of 1s can be added if no weights are desired.
-#' @param numfolds the number of desired folds for cross validation
+#' @param numfolds optional: the number of desired folds for cross validation if folds are not provided
+#' @param stratify optional: the name of the field in the dataset which we wish to use to stratify the folds if folds are not provided and stratification is desired
+#' @param modelfunc a function that takes the dataset as input and creates a model in the desired format. The user is responsible for writing this function and ensuring it outputs the model in the desired format.
 #' @return a dataframe with coefficients across models, the mean and std dev of those coeffs, and an indicator as to whether the coefficient switched directions between models, p values of each coefficient, and an indicator of whether all p-values are statistically significant across models
 #' @examples
 #' mock_data <- data.frame(preds1 = rep(1:4,10),preds2 = rep(1:10,4),target=rep(1:5,8),strat=rep(1:2,20),weights = rep(c(2,1),20))
 #' model function:
-#' model_function<-function(target,data,weights){
-#' targnum<-which(colnames(data) == target)
-#' weightnum<-which(colnames(data) == weights)
+#' model_function<-function(data){
+#' targnum<-which(colnames(data) == "target")
+#' weightnum<-which(colnames(data) == "weights")
 #' moddat<-data[,-c(targnum,weightnum)]
 #' targ<-data[,targnum]
 #' weights<-data[,weightnum]
@@ -22,15 +19,26 @@
 #' mod
 #' }
 #' test function:
-#' model_function("target",mock_data,"weights")
+#' model_function(mock_data)
 #' compare to:
 #' mock_data2 <- mock_data[,-which(colnames(mock_data) == "weights")]
 #' lm(target~.,data=mock_data2,weights=mock_data$weights)
 #' finally, test function:
-#' coeffcomp(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
+#' coeffcomp(mock_data,3,"strat",model_function)
+#' test with predefined folds (results should match)
+#' mock_data3<-fold_field(mock_data,3,"strat")
+#' coeffcomp(mock_data3,modelfunc=model_function)
 
-coeffcomp<-function(data,target,stratify,preds,modelfunc,weights,numfolds){
-  modellist<-buildcvmods(data,target,stratify,preds,modelfunc,weights,numfolds)
+coeffcomp<-function(data,numfolds,stratify,modelfunc){
+
+  if(!"fold" %in% colnames(data)){
+    modellist<-buildcvmods(data,numfolds,stratify,modelfunc)
+
+  }else {
+    modellist<-buildcvmods(data,modelfunc=modelfunc)
+    numfolds<-length(unique(data[,which(colnames(data) == "fold")]))
+  }
+
   cc<-data.frame(mod1Coeff = modellist[[1]]$coefficients)
 
   for (i in 2:numfolds){

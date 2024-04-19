@@ -11,11 +11,11 @@ featengcv(data, cols, stratify, engfunc, numfolds)
 
 \item{cols}{the fields which require engineering}
 
-\item{stratify}{the name of the field in the dataset which we wish to use to stratify the cv folds}
+\item{stratify}{optional: the name of the field in the dataset which we wish to use to stratify the cv folds}
 
 \item{engfunc}{a function that takes the cols and transforms them as desired and outputs this process to be used on the out of fold data. The user is responsible for writing this function and ensuring it outputs the data in the desired format.}
 
-\item{numfolds}{the number of desired folds for cross validation}
+\item{numfolds}{optional: the number of desired folds for cross validation if folds are not provided}
 }
 \value{
 a dataframe with out of fold engineered fields

@@ -1,10 +1,10 @@
 #' When feature engineering such as imputation is part of your cross validation process, you'll need to perform that engineering in a CV manner before building your models. This function will perform that engineering and output a dataset with out of fold engineering.
 #'
 #' @param data the dataset
-#' @param stratify the name of the field in the dataset which we wish to use to stratify the cv folds
+#' @param stratify optional: the name of the field in the dataset which we wish to use to stratify the cv folds
 #' @param cols the fields which require engineering
 #' @param engfunc a function that takes the cols and transforms them as desired and outputs this process to be used on the out of fold data. The user is responsible for writing this function and ensuring it outputs the data in the desired format.
-#' @param numfolds the number of desired folds for cross validation
+#' @param numfolds optional: the number of desired folds for cross validation if folds are not provided
 #' @return a dataframe with out of fold engineered fields
 #' @examples
 #' mock_data <- data.frame(col1 = as.numeric(c(rep(1:4,9),rep("NA",4))),col2 = as.numeric(c(rep("NA",4),rep(1:9,4))),strat=rep(c(1,2),20))
@@ -40,7 +40,14 @@
 #' Indeed, in test1, fold 5, we see the value 4.931034 in what was originally row 2. It works!!!
 
 featengcv<-function(data, cols, stratify, engfunc, numfolds){
-  newdata<-fold_field(data,numfolds,stratify)
+
+  if(!"fold" %in% colnames(data)){
+    newdata<-fold_field(data,numfolds,stratify)
+
+  }else {
+    newdata<-data
+    numfolds<-length(unique(data[,which(colnames(data) == "fold")]))
+  }
 
   engfuncs<-list()
 

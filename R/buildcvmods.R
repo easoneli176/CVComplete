@@ -1,13 +1,13 @@
-#' Outputs a list of models built without the ith fold
+#' Outputs a list of models built without the ith fold. If the dataset has a column named "fold" that will be used for CV, otherwise folds will be created by the function.
 #'
 #' @param data the dataset
 #' @param target the target variable for the model
-#' @param stratify the name of the field in the dataset which we wish to use to stratify the cv folds
+#' @param stratify optional: the name of the field in the dataset which we wish to use to stratify the cv folds
 #' @param preds the predictors for the model
 #' @param modelfunc a function that takes the target and dataset with only predictors and creates a model in the desired format. The user is responsible for writing this function and ensuring it outputs the model in the desired format.
 #' @param weights the weights to be used in model building if desired. This must be a field in the dataframe and a column of 1s can be added if no weights are desired.
-#' @param numfolds the number of desired folds for cross validation
-#' @return a list of numfolds models
+#' @param numfolds optional: the number of desired folds for cross validation if folds are not provided
+#' @return a list of models, each built with one fold of data left out
 #' @examples
 #' mock_data <- data.frame(preds1 = rep(1:4,10),preds2 = rep(1:10,4),target=rep(1:5,8),strat=rep(1:2,20),weights = rep(c(2,1),20))
 #' model function:
@@ -28,11 +28,22 @@
 #' lm(target~.,data=mock_data2,weights=mock_data$weights)
 #' finally, test function:
 #' buildcvmods(mock_data,"target","strat",c("preds1","preds2"),model_function,"weights",3)
+#' test with no stratifying argument
+#' buildcvmods(mock_data,"target",preds=c("preds1","preds2"),modelfunc=model_function,weights="weights",numfolds=3)
+#' test with predefined folds
+#' mock_data2<-fold_field(mock_data,3)
+#' buildcvmods(mock_data2,"target",preds=c("preds1","preds2"),modelfunc=model_function,weights="weights")
 
 buildcvmods<-function(data,target,stratify,preds,modelfunc,weights,numfolds){
   modellist<-list()
 
-  newdata<-fold_field(data,numfolds,stratify)
+  if(!"fold" %in% colnames(data)){
+    newdata<-fold_field(data,numfolds,stratify)
+
+  }else {
+    newdata<-data
+    numfolds<-length(unique(data[,which(colnames(data) == "fold")]))
+  }
 
   newdata<-newdata[,which(colnames(newdata) %in% c(target,preds,"fold",weights))]
 
